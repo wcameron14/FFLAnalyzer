@@ -2,6 +2,7 @@ import requests
 import database
 import api
 import logging
+import os
 
 # Set up logging
 logging.basicConfig(
@@ -27,8 +28,10 @@ database.create_table(conn, cur, 'Traded_Draft_Picks', """transaction_id VARCHAR
 database.create_table(conn, cur, 'Traded_Waiver_Budgets',"""transaction_id VARCHAR PRIMARY KEY, sender INT, receiver INT, amount INT""")
 database.create_table(conn, cur, 'league_settings',"""league_id TEXT PRIMARY KEY, total_rosters INTEGER, status TEXT, sport TEXT, settings JSONB, season_type TEXT, season TEXT, scoring_settings JSONB, roster_positions JSONB, previous_league_id TEXT, name TEXT, draft_id TEXT, avatar TEXT""")
 
+username = os.getenv('SLEEPER_USERNAME')
+
 if __name__ == "__main__":
-    api.get_all_data(2018, 'RVAPanthersFan')
+    api.get_all_data(2018, username)
 
 # Close database connection
 cur.close()
