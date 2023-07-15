@@ -1,3 +1,7 @@
+# private files
+.env
+archive/getAPI.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
