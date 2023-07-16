@@ -29,7 +29,18 @@ Before you begin, ensure you have met the following requirements:
 
 ## Usage
 
-Run `main.py` in your terminal to start the data collection process. The application will fetch data from the Sleeper API and insert it into the PostgreSQL database.
+Run `main.py` in your terminal to start the data collection process. The application will fetch data from the Sleeper API and insert it into the PostgreSQL database. The database schema includes the following tables:
+
+* `Users`: Contains information about users in the leagues.
+* `Players`: Contains information about players in the leagues.
+* `Leagues`: Contains information about the leagues.
+* `League_Owners`: Contains information about league ownership.
+* `Rosters`: Contains information about rosters in the leagues.
+* `Matchups`: Contains information about matchups in the leagues.
+* `Transactions`: Contains information about transactions (trades and waivers) in the leagues.
+* `League_Settings`: Contains league settings.
+
+Error handling is built into each step of the data collection process. If an error occurs while fetching or inserting data, the application will log the error and continue with the next piece of data. If you encounter any problematic leagues that cause errors, you can exclude them from the data collection process by adding their IDs to the `problematic_league_ids` list in `api.py`.
 
 ## Contributing
 
