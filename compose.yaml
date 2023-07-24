@@ -1,29 +1,36 @@
+version: '3.8'
 services:
   postgres:
     container_name: postgres
     image: postgres:latest
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PW}
-      - POSTGRES_DB=${POSTGRES_DB} #optional (specify default database instead of $POSTGRES_DB)
+    env_file:
+      - .env
     ports:
       - "5432:5432"
-    restart: always
+    networks:
+      - ffla_network
 
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4:latest
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_MAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PW}
+    env_file:
+      - .env
     ports:
       - "8080:80"
-    restart: always
+    networks:
+      - ffla_network
+
   app:
     container_name: app
     build: .
+    env_file:
+      - .env
     ports:
       - "3000:3000"
     depends_on:
       - postgres
-    restart: always
+    networks:
+      - ffla_network
+
+networks:
+  ffla_network:

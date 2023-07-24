@@ -86,3 +86,4 @@ def get_all_data(start_year, username):
 
     conn.commit()
 
+

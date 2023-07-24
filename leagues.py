@@ -94,21 +94,23 @@ def insert_league_owners(conn, cur, league_id):
         insert_user(conn, cur, user)
         league_owner = {
             'league_id': league_id,
+            'display_name': user['display_name'],
             'user_id': user['user_id'],
             'is_owner': user.get('is_owner', False)
         }
         # Check for 'NULL' string and replace it with None
         if league_owner['is_owner'] == 'NULL':
             league_owner['is_owner'] = None
-        database.insert_data(conn, cur, 'league_owners', 'league_id, user_id, is_owner', tuple(league_owner.values()), 'league_id, user_id')
+        database.insert_data(conn, cur, 'league_owners', 'league_id, display_name, user_id, is_owner', tuple(league_owner.values()), 'league_id, user_id')
 
         if 'metadata' in user and 'team_name' in user['metadata']:
             team_name = {
                 'user_id': user['user_id'],
+                'display_name': user['display_name'],
                 'league_id': user['league_id'],
                 'team_name': user['metadata']['team_name']
             }
-            database.insert_data(conn, cur, 'team_name', 'user_id, league_id, team_name', tuple(team_name.values()), 'user_id')
+            database.insert_data(conn, cur, 'team_name', 'user_id, display_name, league_id, team_name', tuple(team_name.values()), 'user_id')
 
 #Insert League Settings
 def insert_league_settings(conn, cur, settings):
