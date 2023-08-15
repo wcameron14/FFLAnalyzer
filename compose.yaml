@@ -5,6 +5,8 @@ services:
     image: postgres:latest
     env_file:
       - .env
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PW}
     ports:
       - "5432:5432"
     networks:
@@ -15,6 +17,9 @@ services:
     image: dpage/pgadmin4:latest
     env_file:
       - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_MAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PW}
     ports:
       - "8080:80"
     networks:
@@ -26,11 +31,15 @@ services:
     env_file:
       - .env
     ports:
-      - "3000:3000"
+      - "5000:5000"  # Map Flask's default port to host's port
     depends_on:
       - postgres
     networks:
       - ffla_network
+    command: ["flask", "run", "--host=0.0.0.0"]  # Start the Flask app
+    environment:
+      FLASK_ENV: development
+
 
 networks:
   ffla_network:

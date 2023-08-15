@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FFLBot - Your Personal Fantasy Football Assistant</title>
+    <link rel="stylesheet" type="text/css" href="static/css/style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to FFLBot</h1>
+        <p>Your Personal Fantasy Football Assistant</p>
+        <a href="{{ url_for('auth.account_setup') }}" class="btn btn-primary">Create Account</a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Login</a>
+    </div>
+    <div class="content">
+        <h2>About FFLBot</h2>
+        <p>FFLBot is a tool designed to help you make smarter decisions in your fantasy football league. With data analysis and visualization, FFLBot provides insights that can give you the edge over your competition.</p>
+        <!-- Add more content about the features of your tool -->
+    </div>
+    <div class="footer">
+        <p>© 2023 FFLBot. All rights reserved.</p>
+    </div>
+</body>
+</html>

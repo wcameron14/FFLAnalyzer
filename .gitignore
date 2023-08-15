@@ -1,6 +1,7 @@
 # private files
 .env
 archive/getAPI.py
+credentials.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

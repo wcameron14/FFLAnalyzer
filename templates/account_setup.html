@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Account Setup - FFLBot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/account_setup.js') }}" defer></script>
+</head>
+<body>
+    <div class="header">
+        <h1>Create your FFLBot Account</h1>
+    </div>
+    <div class="content">
+        <form id="accountSetupForm" method="POST">
+            {{ form.hidden_tag() }}
+        
+            <label for="first_name">First Name:</label><br>
+            {{ form.first_name(id='first_name') }}
+            <p class="error-message" id="fNameError">Please enter your first name.</p><br>
+        
+            <label for="last_name">Last Name:</label><br>
+            {{ form.last_name(id='last_name') }}
+            <p class="error-message" id="lNameError">Please enter your last name.</p><br>
+        
+            <label for="email">Email:</label><br>
+            {{ form.email(id='email') }}
+            <p class="error-message" id="emailError">Please enter a valid email address.</p><br>
+        
+            <label for="password">Password:</label><br>
+            {{ form.password(id='password') }}
+            <p class="error-message" id="passwordError">Please create a valid password with: 8 or more characters, at least 1 alpha, at least 1 numeric and at least 1 special character.</p><br>
+        
+            <label for="confirmPassword">Confirm Password:</label><br>
+            {{ form.confirm_password(id='confirmPassword') }}
+            <p class="error-message" id="confirmPasswordError">The passwords do not match. Please check your entries.</p><br>
+        
+            {{ form.submit() }}
+        </form>
+        
+    </div>
+</body>
+</html>
