@@ -103,6 +103,8 @@ def login():
 
         # If the user doesn't exist or the password is incorrect, redirect to login
         if user is None or not user.check_password(form.password.data):
+            user.is_logged_in = True  # Set is_logged_in to True
+            db.session.commit()
             flash('Invalid username or password')
             return redirect(url_for('auth.login'))
 
@@ -162,6 +164,8 @@ def setup_sleeper():
 @auth.route('/logout')
 @login_required
 def logout():
+    current_user.is_logged_in = False  # Set is_logged_in to False
+    db.session.commit()
     logout_user()
     return redirect(url_for('main.index'))
 

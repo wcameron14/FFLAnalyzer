@@ -16,6 +16,7 @@ class User(db.Model):
     confirmation_sent_at = db.Column(db.DateTime)
     is_active = db.Column(db.Boolean, default=False)
     sleeper_id = db.Column(db.String(64), unique=True, nullable=True)
+    is_logged_in = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -28,5 +29,5 @@ class User(db.Model):
     
     @property
     def is_authenticated(self):
-        return self.is_active
+        return self.is_logged_in
     
