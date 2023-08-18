@@ -1,15 +1,4 @@
-import logging
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler("debug.log"),
-        logging.StreamHandler()
-    ]
-)
-
-from flask import Blueprint, render_template, request, current_app, flash, redirect, url_for, send_from_directory
+from flask import Blueprint, render_template, request, current_app, flash, redirect, url_for, send_from_directory,session
 from werkzeug.security import generate_password_hash
 from app.database.models import db, User
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
@@ -19,13 +8,10 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.urls import url_parse
 import os
 from app import login_manager
+from .forms import LoginForm, AccountSetupForm, SleeperSetupForm
+import subprocess
 auth = Blueprint('auth', __name__)
 main = Blueprint('main', __name__)
-
-
-@auth.route('/test', methods=['GET'])
-def test():
-    return 'Test route working!'
 
 @auth.route('/')
 def landing_page():
@@ -44,9 +30,15 @@ def account_setup():
         password = request.form.get('password')
         hashed_password = generate_password_hash(password, method='scrypt')
 
+        # Check if a user with the provided email already exists
+        user = User.query.filter_by(email=email).first()
+        if user:
+            flash('An account with that email already exists. Please login or use another email address.')
+            return redirect(url_for('auth.login'))
+
         # Generate a token using the SECRET_KEY
         s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-        token = s.dumps(email, salt='account-setup')
+        token = s.dumps(email, salt='email-confirmation-salt')
 
         new_user = User(email=email, first_name=first_name, last_name=last_name, password_hash=hashed_password)
         current_app.logger.debug(f"Adding new user {email} to database session")
@@ -54,25 +46,25 @@ def account_setup():
         db.session.commit()
         current_app.logger.info(f"Committed new user {email} to database")
 
-        # Get email content
-        body_html, body_text = get_email_content()
+        # Generate confirmation link
+        confirm_link = url_for('auth.confirm_email', token=token, _external=True)
+        # Include the confirmation link in the email
+        body_html, body_text = get_email_content(confirm_link)  # Modify get_email_content to accept and include the link
 
         # Send welcome email
         subject = 'Welcome to FFLAnalyzer!'
         send_email(email, subject, body_html, body_text)
 
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.confirm_email', token=token))
 
     return render_template('account_setup.html', form=form) # Adjust the template path as needed
 
 @auth.route('/confirm_email/<token>', methods=['GET'])
 def confirm_email(token):
-    # Create a serializer to decode the token
-    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-
     try:
         # Decode the token to get the email
-        email = s.loads(token, salt='email-confirm', max_age=3600) # 1 hour expiration
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        email = s.loads(token, salt='email-confirmation-salt', max_age=3600) # 1 hour expiration
     except SignatureExpired:
         # If the token has expired
         return render_template('expired_token.html'), 400 # You can create a custom page for expired tokens
@@ -83,8 +75,10 @@ def confirm_email(token):
     if user:
         # Update the user's email confirmation status
         user.email_confirmed = True
+        user.is_active = True
         db.session.commit()
-        return render_template('confirm_email.html')
+        form = LoginForm()
+        return redirect(url_for('auth.login'))
     else:
         return "User not found", 404
 
@@ -94,32 +88,76 @@ def page_not_found(e):
     # note that we set the 404 status explicitly
     return render_template('404.html'), 404
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-    # if the current user is authenticated, redirect them to the index page
+    # If the user is already logged in, redirect to the main index
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
+
     form = LoginForm()
+
+    # If the form is submitted and valid
     if form.validate_on_submit():
+        # Get the user by email
         user = User.query.filter_by(email=form.email.data).first()
-        if user is None or not user.password_hash(form.password.data):
+
+        # If the user doesn't exist or the password is incorrect, redirect to login
+        if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('auth.login'))
+
+        # If the user hasn't confirmed their email, redirect to login
+        if not user.email_confirmed:
+            flash('Please confirm your email before logging in.')
+            return redirect(url_for('auth.login'))
+
+        # Log the user in
         login_user(user, remember=form.remember_me.data)
-        next_page = request.args.get('next')
-        if not next_page or url_parse(next_page).netloc != '':
-            next_page = url_for('main.index')
-        return redirect(next_page)
+        current_app.logger.debug(f"Logged in user: {user}")
+        current_app.logger.debug(f"Session: {session.items()}")
+        db.session.commit()
+
+        # If the user hasn't set their Sleeper ID, redirect to the setup page
+        if not user.sleeper_id:
+            return redirect(url_for('auth.setup_sleeper'))
+
+        # Get the next URL from the request arguments
+        next_url = request.args.get('next')
+        current_app.logger.debug(f"Next URL: {next_url}")
+
+        # If the next URL is not set or is external, redirect to the main index
+        if not next_url or url_parse(next_url).netloc != '':
+            next_url = url_for('main.index')
+        current_app.logger.debug(f"Redirecting to: {next_url}")
+
+        # Redirect to the next URL
+        return redirect(next_url)
+
+    # Render the login form
     return render_template('login.html', title='Sign In', form=form)
 
 @main.route('/index')
 @login_required
 def index():
-    return "Main Page"
+    current_app.logger.debug(f"Index route accessed by user {current_user.email}")
+    current_app.logger.debug(f"Current user authenticated: {current_user.is_active}")
+    return render_template('index.html', username=current_user.first_name)
+
+@auth.route('/setup_sleeper', methods=['GET', 'POST'])
+@login_required
+def setup_sleeper():
+    form = SleeperSetupForm()
+    if form.validate_on_submit():
+        current_user.sleeper_id = form.sleeper_id.data
+        db.session.commit()
+        # Start the db/main.py script here
+        try:
+            subprocess.Popen(["python", "db/main.py"], cwd=current_app.root_path)
+            flash('Background process started successfully.')
+        except Exception as e:
+            flash('Error starting background process: ' + str(e))
+        return redirect(url_for('main.index'))
+    return render_template('setup_sleeper.html', form=form)
 
 @auth.route('/logout')
 @login_required
@@ -130,3 +168,20 @@ def logout():
 @main.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(main.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+@main.route('/leagues')
+def leagues():
+    return render_template('leagues.html')
+
+@main.route('/players')
+def players():
+    return render_template('players.html')
+
+@main.route('/trades')
+def trades():
+    return render_template('trades.html')
+
+@main.route('/account')
+def account():
+    return render_template('account.html')
+

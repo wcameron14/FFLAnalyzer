@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="{{ url_for('main.index') }}"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"></a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('main.index') }}">Dashboard</a></li>
+<!--                 <li><a href="{{ url_for('main.leagues') }}">Leagues</a></li>
+                <li><a href="{{ url_for('main.trades') }}">Trades</a></li>
+                <li><a href="{{ url_for('main.players') }}">Players</a></li> -->
+            </ul>
+            <div class="account-access">
+                <img src="{{ url_for('static', filename='avatar.png') }}" alt="Avatar">
+                <div class="dropdown">
+                    <!-- <a href="{{ url_for('main.account') }}">Account Settings</a> -->
+                    <a href="{{ url_for('auth.logout') }}">Log Out</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <h1>Welcome, {{ username }}!</h1>
+        <section class="leagues-at-glance">
+            <h2>Your Leagues at a Glance</h2>
+            <span>Week [##]</span>
+            <table>
+                <!-- Table data goes here -->
+            </table>
+        </section>
+        <section class="tools">
+        <!-- Tools Section -->
+        <div class="tools-section">
+            <h2>Tools</h2>
+            <div class="tool-tile">
+                <a href="#">Trade Analyzer</a>
+            </div>
+            <div class="tool-tile">
+                <a href="#">Draft Trends</a>
+            </div>
+            <div class="tool-tile">
+                <a href="#">Draft Bot</a>
+            </div>
+            <div class="tool-tile">
+                <a href="#">Trade Finder</a>
+            </div>
+        </div>
+        </section>
+        <!-- News Carousel -->
+        <div class="news-carousel">
+            <h2>Latest News</h2>
+            <div class="carousel-content">
+                <div class="news-item">
+                    <a href="#">News Article 1</a>
+                </div>
+                <div class="news-item">
+                    <a href="#">News Article 2</a>
+                </div>
+                <!-- Add more news items here -->
+            </div>
+            <button class="carousel-prev">Previous</button>
+            <button class="carousel-next">Next</button>
+        </div>
+       
+    </main>
+    <footer>
+        <p>Copyright FFLAnalyzer 2023</p>
+    </footer>
+</body>
+</html>

@@ -1,16 +1,93 @@
-body {
-    font-family: Arial, sans-serif;
+/* Reset some default browser styles */
+body, h1, h2, ul, li, table {
+    margin: 0;
+    padding: 0;
 }
 
-.header {
-    background-color: #f8f9fa;
-    text-align: center;
+/* Body styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+}
+
+/* Header styles */
+header {
+    background-color: #333;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+}
+
+header .logo img {
+    max-height: 50px;
+}
+
+header nav ul {
+    list-style: none;
+    display: flex;
+}
+
+header nav ul li {
+    margin-right: 20px;
+}
+
+header nav ul li a {
+    text-decoration: none;
+    color: #fff;
+}
+
+header .account-access img {
+    border-radius: 50%;
+    max-height: 40px;
+}
+
+header .account-access .dropdown {
+    display: none;
+}
+
+header .account-access:hover .dropdown {
+    display: block;
+}
+
+/* Main section */
+main {
     padding: 20px;
 }
 
-.content {
-    margin: 20px;
+main h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
 }
+
+main .leagues-at-glance {
+    margin-bottom: 30px;
+}
+
+main .leagues-at-glance h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+main .leagues-at-glance span {
+    font-size: 16px;
+}
+
+main .leagues-at-glance table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+main .leagues-at-glance table th,
+main .leagues-at-glance table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+}
+
+/* Footer styles */
 
 .footer {
     background-color: #f8f9fa;
@@ -24,4 +101,60 @@ body {
 .error-message {
     color: red;
     display: none;
+}
+/* Tools Section */
+.tools-section {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.tool-tile {
+    background-color: #f5f5f5;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.tool-tile a {
+    text-decoration: none;
+    color: #333;
+}
+
+/* News Carousel */
+.news-carousel {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.carousel-content {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.news-item {
+    display: inline-block;
+    padding: 10px;
+    min-width: 200px;
+}
+
+.carousel-prev,
+.carousel-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.carousel-prev {
+    left: 10px;
+}
+
+.carousel-next {
+    right: 10px;
 }

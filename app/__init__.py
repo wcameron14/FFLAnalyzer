@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -48,6 +48,14 @@ def create_app(config_class=Config):
     # Flask-Login configuration
     login_manager.login_view = 'auth.login'
     login_manager.login_message_category = 'info'
+    from app.database.models import User
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        user = User.query.get(int(user_id))
+        current_app.logger.debug(f"Loading user: {user}")
+        return user
+
 
     # Flask-Mail configuration
     app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
@@ -61,6 +69,17 @@ def create_app(config_class=Config):
     app.register_blueprint(auth)
     app.register_blueprint(main)
 
+    # Configure logging
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+            logging.FileHandler("debug.log"),
+            logging.StreamHandler()
+        ]
+    )
+    app.logger.addHandler(logging.StreamHandler())
+    app.logger.setLevel(logging.DEBUG)
     # Print all known routes
     print("URL Map:")
     for rule in app.url_map.iter_rules():

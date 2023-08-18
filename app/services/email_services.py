@@ -31,7 +31,7 @@ def send_email(to_email, subject, body_html, body_text):
     else:
         current_app.logger.info('Email sent! Message ID: ' + response['MessageId'])
     
-def get_email_content():
+def get_email_content(confirm_link):
     login_url = url_for('auth.login', _external=True)  # Generate the login URL dynamically
     body_html = render_template('confirm_email.html', login_url=login_url)
     body_text = f"Welcome to FFLAnalyzer! This email confirms that your account was set-up correctly. To log in, click on the following link: {login_url}"
