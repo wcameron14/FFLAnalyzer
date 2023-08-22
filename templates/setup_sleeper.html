@@ -37,6 +37,15 @@
                 {{ form.submit() }}
             </form>
         </div>
+        <div id="loading-message" style="display: none;">Loading data, please wait...</div>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+        $(document).ready(function() {
+            $('#sleeper-form').on('submit', function() {
+                $('#loading-message').show();
+            });
+        });
+        </script>
     </div>
 </body>
 </html>

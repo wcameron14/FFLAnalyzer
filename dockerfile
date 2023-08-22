@@ -11,15 +11,16 @@ COPY . .
 COPY app/config.py .
 COPY requirements.txt .
 
-# Copy the wait-for-postgres.sh script into the image
-COPY wait_for_postgres.sh /wait_for_postgres.sh
-
-# Make the script executable
-RUN chmod +x /wait_for_postgres.sh
-
 # Install any needed packages specified in requirements.txt
-RUN apt-get update && apt-get install -y libpq-dev
+RUN apt-get update && apt-get install -y libpq-dev wget
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Set Dockerize environment variables.
+ENV DOCKERIZE_VERSION v0.6.1
+# Download and install Dockerize
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
@@ -34,4 +35,4 @@ ENV FLASK_RUN_HOST=0.0.0.0
 ENV PYTHONPATH=${PYTHONPATH}:/app
 
 # Run app.py when the container launches
-CMD ["/wait_for_postgres.sh", "postgres", "flask run --host=0.0.0.0"]
+CMD dockerize -wait tcp://postgres:5432 -timeout 1m flask run --host=0.0.0.0

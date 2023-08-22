@@ -10,6 +10,8 @@ import os
 from app import login_manager
 from .forms import LoginForm, AccountSetupForm, SleeperSetupForm
 import subprocess
+from app.sleeperAPI.main import get_all_data
+
 auth = Blueprint('auth', __name__)
 main = Blueprint('main', __name__)
 
@@ -64,7 +66,7 @@ def confirm_email(token):
     try:
         # Decode the token to get the email
         s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-        email = s.loads(token, salt='email-confirmation-salt', max_age=3600) # 1 hour expiration
+        email = s.loads(token, salt='email-confirmation-salt', max_age=600) # 10 minute expiration
     except SignatureExpired:
         # If the token has expired
         return render_template('expired_token.html'), 400 # You can create a custom page for expired tokens
@@ -90,6 +92,7 @@ def page_not_found(e):
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    current_app.logger.debug(f"Login route hit. Session: {session.items()}")
     # If the user is already logged in, redirect to the main index
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
@@ -103,8 +106,6 @@ def login():
 
         # If the user doesn't exist or the password is incorrect, redirect to login
         if user is None or not user.check_password(form.password.data):
-            user.is_logged_in = True  # Set is_logged_in to True
-            db.session.commit()
             flash('Invalid username or password')
             return redirect(url_for('auth.login'))
 
@@ -114,10 +115,9 @@ def login():
             return redirect(url_for('auth.login'))
 
         # Log the user in
-        login_user(user, remember=form.remember_me.data)
-        current_app.logger.debug(f"Logged in user: {user}")
-        current_app.logger.debug(f"Session: {session.items()}")
+        user.is_logged_in = True  # Set is_logged_in to True
         db.session.commit()
+        login_user(user, remember=form.remember_me.data)    
 
         # If the user hasn't set their Sleeper ID, redirect to the setup page
         if not user.sleeper_id:
@@ -152,14 +152,13 @@ def setup_sleeper():
     if form.validate_on_submit():
         current_user.sleeper_id = form.sleeper_id.data
         db.session.commit()
-        # Start the db/main.py script here
-        try:
-            subprocess.Popen(["python", "db/main.py"], cwd=current_app.root_path)
-            flash('Background process started successfully.')
-        except Exception as e:
-            flash('Error starting background process: ' + str(e))
+        flash('Your Sleeper ID has been set!')
+        
+        # Call get_all_data function
+        get_all_data(2018, current_user.sleeper_id)
+
         return redirect(url_for('main.index'))
-    return render_template('setup_sleeper.html', form=form)
+    return render_template('setup_sleeper.html', title='Set Sleeper ID', form=form)
 
 @auth.route('/logout')
 @login_required

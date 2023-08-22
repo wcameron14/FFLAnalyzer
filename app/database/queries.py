@@ -25,7 +25,7 @@ def connect_to_db():
             dbname=os.getenv('POSTGRES_DB'),
             user=os.getenv('POSTGRES_USER'),
             password=os.getenv('POSTGRES_PW'),
-            host='localhost',
+            host='postgres',
             port='5432'
             )
     
