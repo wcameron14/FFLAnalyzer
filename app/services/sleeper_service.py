@@ -72,11 +72,12 @@ def get_all_data(start_year, username):
                 insert_matchups(conn, cur, matchups)
             
             #Draft Picks
-            cur.execute("SELECT draft_id FROM leagues")
+            cur.execute("SELECT draft_id FROM Leagues")
             draft_ids = [row[0] for row in cur.fetchall()]
 
             # Get the draft picks for each draft ID
             for draft_id in draft_ids:
+                logging.debug(f"Draft picks data for draft {draft_id}")
                 draft_picks = get_draft_picks(conn, cur, draft_id)  # get_draft_picks() now returns draft picks data
                 if draft_picks:  # Make sure there is data before trying to insert it
                     insert_draft_picks(conn, cur, draft_id)

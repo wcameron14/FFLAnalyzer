@@ -9,6 +9,24 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PW}
     ports:
       - "5432:5432"
+    volumes:
+    - fflanalyzerSQL:/var/lib/postgresql/data
+
+    networks:
+      - ffla_network
+
+  gamedata_postgres:
+    image: postgres:latest
+    container_name: gamedata_postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: gamedata
+      POSTGRES_PASSWORD: ${GAMEDATA_PW}
+    ports:
+      - "5433:5432" # Expose port 5433 on the host and map it to 5432 in the container
+    volumes:
+      - game_data:/var/lib/postgresql/data
     networks:
       - ffla_network
 
@@ -41,5 +59,9 @@ services:
       FLASK_ENV: development
 
 
+volumes:
+  game_data: # Create a volume to persist the database data
+  fflanalyzerSQL: # Create a volume to persist the database data
+  
 networks:
   ffla_network:

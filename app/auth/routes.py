@@ -10,7 +10,7 @@ import os
 from app import login_manager
 from .forms import LoginForm, AccountSetupForm, SleeperSetupForm
 import subprocess
-from app.sleeperAPI.main import get_all_data
+from app.services.sleeper_service import get_all_data
 
 auth = Blueprint('auth', __name__)
 main = Blueprint('main', __name__)
