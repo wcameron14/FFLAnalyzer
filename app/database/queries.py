@@ -40,14 +40,14 @@ def create_table(conn, cur, table_name, fields):
     cur.execute(query)
     conn.commit()
 
-def create_sportsradar_table(conn, cur, table_name, fields):
+"""def create_sportsradar_table(conn, cur, table_name, fields):
     # This function creates a table with the given fields
     query = sql.SQL("CREATE TABLE IF NOT EXISTS {} ({});").format(
         sql.Identifier(table_name),
         sql.SQL(fields)
     )
     cur.execute(query)
-    conn.commit()
+    conn.commit()"""
 
 
 def insert_data(conn, cur, table, columns, data, conflict_column):

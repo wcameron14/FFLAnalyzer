@@ -30,12 +30,12 @@ RUN echo "deb https://cloud.r-project.org/bin/linux/debian buster-cran40/" >> /e
 
 # Install R 4.3.1 and clean up
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends r-base=4.3.2* && \
+    apt-get install -y --no-install-recommends r-base && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install R packages
-RUN R -e "install.packages(c('nflreadr', 'DBI', 'RPostgreSQL'), repos = 'http://cran.us.r-project.org')"
+RUN R -e "install.packages(c('nflreadr','ffscrapr', 'DBI', 'RPostgreSQL'), repos = 'http://cran.us.r-project.org')"
 
 # Set Dockerize environment variables.
 ENV DOCKERIZE_VERSION v0.6.1

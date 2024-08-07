@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main Page</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .chart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .bar {
+            display: flex;
+            margin: 5px;
+            background-color: steelblue;
+            text-align: right;
+            color: white;
+            padding-right: 10px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -14,7 +30,7 @@
         <nav>
             <ul>
                 <li><a href="{{ url_for('main.index') }}">Dashboard</a></li>
-<!--                 <li><a href="{{ url_for('main.leagues') }}">Leagues</a></li>
+                <!-- <li><a href="{{ url_for('main.leagues') }}">Leagues</a></li>
                 <li><a href="{{ url_for('main.trades') }}">Trades</a></li>
                 <li><a href="{{ url_for('main.players') }}">Players</a></li> -->
             </ul>
@@ -37,24 +53,22 @@
             </table>
         </section>
         <section class="tools">
-        <!-- Tools Section -->
-        <div class="tools-section">
-            <h2>Tools</h2>
-            <div class="tool-tile">
-                <a href="#">Trade Analyzer</a>
+            <div class="tools-section">
+                <h2>Tools</h2>
+                <div class="tool-tile">
+                    <a href="#">Trade Analyzer</a>
+                </div>
+                <div class="tool-tile">
+                    <a href="#">Draft Trends</a>
+                </div>
+                <div class="tool-tile">
+                    <a href="#">Draft Bot</a>
+                </div>
+                <div class="tool-tile">
+                    <a href="#">Trade Finder</a>
+                </div>
             </div>
-            <div class="tool-tile">
-                <a href="#">Draft Trends</a>
-            </div>
-            <div class="tool-tile">
-                <a href="#">Draft Bot</a>
-            </div>
-            <div class="tool-tile">
-                <a href="#">Trade Finder</a>
-            </div>
-        </div>
         </section>
-        <!-- News Carousel -->
         <div class="news-carousel">
             <h2>Latest News</h2>
             <div class="carousel-content">
@@ -69,10 +83,120 @@
             <button class="carousel-prev">Previous</button>
             <button class="carousel-next">Next</button>
         </div>
-       
+        <section class="analysis">
+            <h1>FFL Auction Draft Analyzer</h1>
+            <form id="auction-form">
+                <label for="position">Position:</label>
+                <input type="text" id="position" name="position">
+                <label for="rank">Target Rank:</label>
+                <input type="number" id="rank" name="rank">
+                <button type="submit">Calculate Target Price</button>
+            </form>
+            <div id="auction-result"></div>
+
+            <h1>FFL Trade Analyzer</h1>
+            <form id="trade-form">
+                <label for="player1_id">Player 1 ID:</label>
+                <input type="text" id="player1_id" name="player1_id">
+                <label for="player1_cost">Player 1 Cost:</label>
+                <input type="number" id="player1_cost" name="player1_cost">
+                <label for="player2_id">Player 2 ID:</label>
+                <input type="text" id="player2_id" name="player2_id">
+                <label for="player2_cost">Player 2 Cost:</label>
+                <input type="number" id="player2_cost" name="player2_cost">
+                <button type="submit">Evaluate Trade</button>
+            </form>
+            <div id="trade-result"></div>
+        </section>
     </main>
     <footer>
         <p>Copyright FFLAnalyzer 2023</p>
     </footer>
+
+    <script>
+        document.getElementById('auction-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const position = document.getElementById('position').value;
+            const rank = document.getElementById('rank').value;
+
+            fetch('/draft-analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ position, rank })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const auctionResultDiv = document.getElementById('auction-result');
+                auctionResultDiv.innerHTML = `<p>Target Price: $${data.target_price}</p>`;
+                
+                // Bar chart for auction result
+                const width = 400;
+                const height = 50;
+                const margin = { top: 10, right: 30, bottom: 30, left: 40 };
+
+                const svg = d3.select("#auction-result")
+                    .append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+                svg.append("rect")
+                    .attr("class", "bar")
+                    .attr("width", data.target_price * 10)  // Arbitrary scaling for visualization
+                    .attr("height", height - margin.bottom)
+                    .text(`$${data.target_price}`);
+            });
+        });
+
+        document.getElementById('trade-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const player1_id = document.getElementById('player1_id').value;
+            const player1_cost = document.getElementById('player1_cost').value;
+            const player2_id = document.getElementById('player2_id').value;
+            const player2_cost = document.getElementById('player2_cost').value;
+
+            fetch('/trade-analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ player1_id, player1_cost, player2_id, player2_cost })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tradeResultDiv = document.getElementById('trade-result');
+                tradeResultDiv.innerHTML = `
+                    <p>Player 1 Keeper Value: $${data.keeper_value1}</p>
+                    <p>Player 2 Keeper Value: $${data.keeper_value2}</p>
+                `;
+
+                // Bar chart for trade result
+                const tradeData = [
+                    { name: 'Player 1', value: data.keeper_value1 },
+                    { name: 'Player 2', value: data.keeper_value2 }
+                ];
+
+                const tradeSvg = d3.select("#trade-result")
+                    .append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height * tradeData.length + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+                tradeSvg.selectAll(".bar")
+                    .data(tradeData)
+                    .enter()
+                    .append("rect")
+                    .attr("class", "bar")
+                    .attr("width", d => d.value * 10)  // Arbitrary scaling for visualization
+                    .attr("height", height - margin.bottom)
+                    .attr("y", (d, i) => i * (height - margin.bottom + margin.top))
+                    .text(d => `$${d.value}`);
+            });
+        });
+    </script>
 </body>
 </html>

@@ -6,12 +6,12 @@ services:
     env_file:
       - .env
     environment:
+      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PW}
     ports:
       - "5432:5432"
     volumes:
-    - fflanalyzerSQL:/var/lib/postgresql/data
-
+      - fflanalyzerSQL:/var/lib/postgresql/data
     networks:
       - ffla_network
 
@@ -21,12 +21,13 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_USER: gamedata
+      POSTGRES_DB: ${GAMEDATA_DB}
+      POSTGRES_USER: ${GAMEDATA_USER}
       POSTGRES_PASSWORD: ${GAMEDATA_PW}
     ports:
-      - "5433:5432" # Expose port 5433 on the host and map it to 5432 in the container
+      - "5433:5432"
     volumes:
-      - game_data:/var/lib/postgresql/data
+      - gamedata:/var/lib/postgresql/data
     networks:
       - ffla_network
 
@@ -49,19 +50,19 @@ services:
     env_file:
       - .env
     ports:
-      - "5000:5000"  # Map Flask's default port to host's port
+      - "5000:5000"
     depends_on:
       - postgres
+      - gamedata_postgres
     networks:
       - ffla_network
-    command: ["flask", "run", "--host=0.0.0.0"]  # Start the Flask app
+    command: ["flask", "run", "--host=0.0.0.0"]
     environment:
       FLASK_ENV: development
 
-
 volumes:
-  game_data: # Create a volume to persist the database data
-  fflanalyzerSQL: # Create a volume to persist the database data
-  
+  gamedata:
+  fflanalyzerSQL:
+
 networks:
   ffla_network:
