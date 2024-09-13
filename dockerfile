@@ -1,6 +1,9 @@
 # Use an official Python runtime based on Debian 10 ("buster") as a parent image
 FROM python:3.11-slim-buster
 
+# Set-up Logging
+RUN mkdir -p /app/logs
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -56,5 +59,6 @@ ENV FLASK_RUN_HOST=0.0.0.0
 # Add the current directory to Python's module search path
 ENV PYTHONPATH=${PYTHONPATH}:/app
 
-# Run app.py when the container launches
-CMD dockerize -wait tcp://postgres:5432 -timeout 1m flask run --host=0.0.0.0
+# Run the application with logging
+CMD ["sh", "-c", "dockerize -wait tcp://postgres:5432 -timeout 1m flask run --host=0.0.0.0 > /app/logs/output.log 2>&1"]
+
